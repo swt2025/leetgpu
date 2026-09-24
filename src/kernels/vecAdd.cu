@@ -2,6 +2,7 @@
 #include <iostream>
 #include "benchmark/cuda_timer.cuh"
 #include "kernels/vecAdd.cuh"
+#include "helper.cuh"
 
 __global__ void vector_add_0(const float* A, const float* B, float* C, int N) {
     // 当前线程的线性id
@@ -16,6 +17,10 @@ extern "C" void solve(const float* A, const float* B, float* C, int N) {
     int threadsPerBlock = 256;
     int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
 
-    float time_ms = benchmark_cuda_kernel([&](){vector_add_0<<<blocksPerGrid, threadsPerBlock>>>(A, B, C, N);});
+    float time_ms = benchmark_cuda_kernel([&](){
+        vector_add_0<<<blocksPerGrid, threadsPerBlock>>>(A, B, C, N);
+        checkCudaErrors(cudaGetLastError());
+    });
+    
     std::cout << "Spend " << time_ms << "ms" << std::endl;
 }
